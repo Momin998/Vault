@@ -1,0 +1,27 @@
+{
+  "name": "Vault - Secure Wallet Tracker",
+  "short_name": "Vault",
+  "description": "A mobile-ready wallet tracker for deposits, withdrawals, balance, and ledger history.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#080b14",
+  "theme_color": "#080b14",
+  "orientation": "portrait",
+  "categories": [
+    "finance",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "icons/vault-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
