@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Vault app icon">
+  <rect width="512" height="512" rx="112" fill="#080b14"/>
+  <rect x="72" y="72" width="368" height="368" rx="92" fill="#121829" stroke="#ffffff26" stroke-width="8"/>
+  <path d="M151 151l83 226h44l83-226h-51l-53 157-54-157h-52z" fill="#edf0fa"/>
+  <circle cx="374" cy="138" r="36" fill="#f3c15f" opacity=".92"/>
+  <path d="M86 357c74 41 154 55 240 39 45-9 81-25 108-45v89H86z" fill="#5b8cff" opacity=".24"/>
+</svg>
