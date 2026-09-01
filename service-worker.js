@@ -1,11 +1,15 @@
-const CACHE_NAME = "vault-pwa-v1";
+const CACHE_NAME = "vault-pwa-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./style.css",
   "./script.js",
   "./manifest.webmanifest",
-  "./icons/vault-icon.svg"
+  "./icons/vault-icon-192.png",
+  "./icons/vault-icon-512.png",
+  "./icons/vault-maskable-192.png",
+  "./icons/vault-maskable-512.png",
+  "./icons/apple-touch-icon.png"
 ];
 
 self.addEventListener("install", (event) => {

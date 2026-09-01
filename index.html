@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -10,8 +10,8 @@
 <meta name="apple-mobile-web-app-title" content="Vault">
 <meta name="application-name" content="Vault">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icons/vault-icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icons/vault-icon.svg">
+<link rel="icon" href="icons/vault-icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Vault - Secure Wallet Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,7 +42,7 @@
         </div>
         <div class="field">
           <label for="password">Password</label>
-          <input type="password" id="password" placeholder="••••••••" required minlength="6" autocomplete="off">
+          <input type="password" id="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required minlength="6" autocomplete="off">
         </div>
         <button type="submit" class="submit-btn" id="authSubmitBtn">
           <span class="submit-label">Login</span>
@@ -98,10 +98,10 @@
     <section class="entry-panel">
       <div class="entry-toggle" role="tablist">
         <button class="toggle-btn active" data-type="deposit" id="btnDeposit" type="button" role="tab" aria-selected="true">
-          <span class="toggle-icon">↑</span> Deposit
+          <span class="toggle-icon">â†‘</span> Deposit
         </button>
         <button class="toggle-btn" data-type="withdraw" id="btnWithdraw" type="button" role="tab" aria-selected="false">
-          <span class="toggle-icon">↓</span> Withdraw
+          <span class="toggle-icon">â†“</span> Withdraw
         </button>
       </div>
 
@@ -134,7 +134,7 @@
         <!-- entries injected by JS -->
       </ul>
       <div class="empty-state" id="emptyState">
-        <span class="empty-icon">◌</span>
+        <span class="empty-icon">â—Œ</span>
         <p>No entries yet.<br>Add your first deposit or withdrawal above.</p>
       </div>
     </section>
@@ -148,3 +148,4 @@
 <script src="script.js"></script>
 </body>
 </html>
+
