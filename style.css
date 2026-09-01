@@ -149,6 +149,22 @@ body {
   min-width: 0;
 }
 
+.install-btn {
+  background: #ffffff10;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--ink);
+  padding: 7px 10px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+.install-btn:hover:not(:disabled) { background: var(--blue-dim); border-color: var(--border-strong); color: #fff; }
+.install-btn:disabled { cursor: not-allowed; opacity: 0.55; }
+
 .logout-btn {
   background: transparent;
   border: 1px solid var(--border);
@@ -566,6 +582,7 @@ body {
 .field input:focus-visible,
 .toggle-btn:focus-visible,
 .submit-btn:focus-visible,
+.install-btn:focus-visible,
 .logout-btn:focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 2px;

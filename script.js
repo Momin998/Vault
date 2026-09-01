@@ -77,7 +77,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_w60KXhq-eH_dfrjCJqtGzA_7OWn5SCN';
 let supabaseClient = null;
 let isConnected = false;
 
-if (SUPABASE_URL !== 'https://YOUR_PROJECT_REF.supabase.co') {
+if (window.supabase && SUPABASE_URL !== 'https://YOUR_PROJECT_REF.supabase.co' && SUPABASE_ANON_KEY) {
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   isConnected = true;
 }
@@ -98,6 +98,7 @@ const authError       = document.getElementById("authError");
 const phoneInput      = document.getElementById("phone");
 const passwordInput   = document.getElementById("password");
 const logoutBtn       = document.getElementById("logoutBtn");
+const installBtn      = document.getElementById("installBtn");
 const userPhoneDisplay = document.getElementById("userPhoneDisplay");
 
 const balanceFigure = document.getElementById("balanceFigure");
@@ -117,6 +118,7 @@ const ledgerList  = document.getElementById("ledgerList");
 const ledgerCount = document.getElementById("ledgerCount");
 const emptyState  = document.getElementById("emptyState");
 
+let deferredInstallPrompt = null;
 let isLoginMode = true;
 let currentUser = null;
 let currentMode = "deposit";
@@ -420,3 +422,36 @@ entryForm.addEventListener("submit", async (e) => {
 
 setMode("deposit");
 showAuth();
+
+/* ============================================================
+   PART 12: PWA install + offline shell
+   ============================================================ */
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").catch((error) => {
+      console.warn("Service worker registration failed:", error.message);
+    });
+  });
+}
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  installBtn.classList.remove("hidden-view");
+});
+
+installBtn.addEventListener("click", async () => {
+  if (!deferredInstallPrompt) return;
+  installBtn.disabled = true;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  installBtn.classList.add("hidden-view");
+  installBtn.disabled = false;
+});
+
+window.addEventListener("appinstalled", () => {
+  deferredInstallPrompt = null;
+  installBtn.classList.add("hidden-view");
+});
