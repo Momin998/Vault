@@ -1,4 +1,4 @@
-const CACHE_NAME = "vault-pwa-v2";
+const CACHE_NAME = "vault-pwa-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -28,22 +28,26 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// Network-first: online ho to hamesha taza file (aur cache bhi update), offline ho
+// to cache se. Pehle cache-first tha — us se update ke baad bhi purani files atki
+// rehti thi jab tak cache version na badlo. Sirf apne origin ki files handle hoti
+// hain; Supabase / CDN ki requests ko service worker chhota nahi.
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
+  const request = event.request;
+  if (request.method !== "GET") return;
+  if (new URL(request.url).origin !== self.location.origin) return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(event.request)
-        .then((response) => {
+    fetch(request, { cache: "no-cache" })
+      .then((response) => {
+        if (response.ok) {
           const copy = response.clone();
-          if (response.ok && new URL(event.request.url).origin === self.location.origin) {
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          }
-          return response;
-        })
-        .catch(() => caches.match("./index.html"));
-    })
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      })
+      .catch(() =>
+        caches.match(request).then((cached) => cached || caches.match("./index.html"))
+      )
   );
 });

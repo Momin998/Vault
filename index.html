@@ -19,6 +19,8 @@
 <link rel="stylesheet" href="style.css">
 <!-- Supabase SDK: enables cloud sync when online. App falls back gracefully if unavailable. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Chart.js: powers the Insights panel (category breakdown + monthly trend) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -42,7 +44,7 @@
         </div>
         <div class="field">
           <label for="password">Password</label>
-          <input type="password" id="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required minlength="6" autocomplete="off">
+          <input type="password" id="password" placeholder="••••••••" required minlength="6" autocomplete="off">
         </div>
         <button type="submit" class="submit-btn" id="authSubmitBtn">
           <span class="submit-label">Login</span>
@@ -98,10 +100,10 @@
     <section class="entry-panel">
       <div class="entry-toggle" role="tablist">
         <button class="toggle-btn active" data-type="deposit" id="btnDeposit" type="button" role="tab" aria-selected="true">
-          <span class="toggle-icon">â†‘</span> Deposit
+          <span class="toggle-icon">↑</span> Deposit
         </button>
         <button class="toggle-btn" data-type="withdraw" id="btnWithdraw" type="button" role="tab" aria-selected="false">
-          <span class="toggle-icon">â†“</span> Withdraw
+          <span class="toggle-icon">↓</span> Withdraw
         </button>
       </div>
 
@@ -110,12 +112,27 @@
           <label for="title">For</label>
           <input type="text" id="title" placeholder="e.g. Freelance payment" autocomplete="off" required>
         </div>
+        <div class="field" id="categoryField" style="display:none;">
+          <label for="category">Category</label>
+          <select id="category">
+            <option>Food</option>
+            <option>Transport</option>
+            <option>Bills</option>
+            <option>Shopping</option>
+            <option>Health</option>
+            <option>Other</option>
+          </select>
+        </div>
         <div class="field amount-field">
           <label for="amount">Amount</label>
           <div class="amount-input">
             <span class="currency">Rs</span>
             <input type="number" id="amount" placeholder="0" min="1" step="1" inputmode="numeric" required>
           </div>
+        </div>
+        <div class="field">
+          <label for="entryDate">Date</label>
+          <input type="date" id="entryDate" required>
         </div>
         <button type="submit" class="submit-btn" id="submitBtn">
           <span class="submit-label">Add Deposit</span>
@@ -124,19 +141,175 @@
       <p class="form-error" id="formError" role="alert"></p>
     </section>
 
+    <!-- INSIGHTS -->
+    <section class="insights">
+      <div class="insights-head">
+        <h2>Insights</h2>
+      </div>
+
+      <div class="range-switcher" role="tablist">
+        <button class="range-btn active" data-range="month" type="button" role="tab" aria-selected="true">This Month</button>
+        <button class="range-btn" data-range="all" type="button" role="tab" aria-selected="false">All Time</button>
+        <button class="range-btn" data-range="custom" type="button" role="tab" aria-selected="false">Custom</button>
+      </div>
+
+      <div class="range-custom" id="rangeCustom">
+        <div class="field">
+          <label for="rangeFrom">From</label>
+          <input type="date" id="rangeFrom">
+        </div>
+        <div class="field">
+          <label for="rangeTo">To</label>
+          <input type="date" id="rangeTo">
+        </div>
+        <button type="button" class="submit-btn range-apply-btn" id="rangeApplyBtn">
+          <span class="submit-label">Apply</span>
+        </button>
+        <p class="form-error" id="rangeError" role="alert"></p>
+      </div>
+
+      <div class="range-summary" id="rangeSummary"></div>
+
+      <div class="insights-grid">
+        <div class="insight-card">
+          <h3>By category <span class="insight-card-sub" id="categoryRangeLabel"></span></h3>
+          <div class="chart-wrap">
+            <canvas id="categoryChart"></canvas>
+          </div>
+          <p class="empty-mini" id="categoryEmpty">No withdrawals in this range.</p>
+        </div>
+        <div class="insight-card">
+          <h3>Monthly trend <span class="insight-card-sub">(all time)</span></h3>
+          <div class="chart-wrap">
+            <canvas id="monthlyChart"></canvas>
+          </div>
+          <p class="empty-mini" id="monthlyEmpty">No data yet.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- BUDGETS -->
+    <section class="budgets">
+      <div class="budgets-head">
+        <h2>Budgets</h2>
+        <span class="budgets-sub">This month</span>
+      </div>
+      <div class="budgets-list" id="budgetsList"></div>
+    </section>
+
+    <!-- RECURRING BILLS -->
+    <section class="recurring">
+      <div class="recurring-head">
+        <h2>Recurring Bills</h2>
+        <span class="recurring-sub">Auto-added monthly</span>
+      </div>
+
+      <div class="recurring-list" id="recurringList"></div>
+
+      <form id="recurringForm" class="recurring-form">
+        <div class="recurring-form-row">
+          <div class="field">
+            <label for="recTitle">Title</label>
+            <input type="text" id="recTitle" placeholder="e.g. Internet bill" autocomplete="off" required>
+          </div>
+          <div class="field">
+            <label for="recCategory">Category</label>
+            <select id="recCategory">
+              <option>Food</option>
+              <option>Transport</option>
+              <option selected>Bills</option>
+              <option>Shopping</option>
+              <option>Health</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="recurring-form-row">
+          <div class="field">
+            <label for="recAmount">Amount</label>
+            <div class="amount-input">
+              <span class="currency">Rs</span>
+              <input type="number" id="recAmount" placeholder="0" min="1" step="1" inputmode="numeric" required>
+            </div>
+          </div>
+          <div class="field">
+            <label for="recDay">Day of month</label>
+            <input type="number" id="recDay" placeholder="1–28" min="1" max="28" step="1" inputmode="numeric" required>
+          </div>
+        </div>
+        <button type="submit" class="submit-btn recurring-submit" id="recurringSubmitBtn">
+          <span class="submit-label">Add Rule</span>
+        </button>
+        <p class="form-error" id="recurringError" role="alert"></p>
+      </form>
+    </section>
+
     <!-- LEDGER -->
     <section class="ledger">
       <div class="ledger-head">
         <h2>Ledger</h2>
         <span class="ledger-count" id="ledgerCount">0 entries</span>
       </div>
+      <div class="ledger-tools">
+        <div class="search-wrap">
+          <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="search" id="ledgerSearch" placeholder="Search title or category" autocomplete="off" aria-label="Search entries">
+        </div>
+        <div class="filter-row">
+          <select id="ledgerTypeFilter" aria-label="Filter by type">
+            <option value="all">All types</option>
+            <option value="deposit">Deposits</option>
+            <option value="withdraw">Withdrawals</option>
+            <option value="recurring">Recurring</option>
+          </select>
+          <select id="ledgerCategoryFilter" aria-label="Filter by category">
+            <option value="all">All categories</option>
+            <option>Food</option>
+            <option>Transport</option>
+            <option>Bills</option>
+            <option>Shopping</option>
+            <option>Health</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="filter-meta">
+          <span id="filterSummary"></span>
+          <button type="button" class="link-btn" id="clearFiltersBtn" hidden>Clear filters</button>
+        </div>
+      </div>
+
       <ul class="ledger-list" id="ledgerList">
         <!-- entries injected by JS -->
       </ul>
+      <button type="button" class="more-btn" id="ledgerMoreBtn" hidden>Show more</button>
       <div class="empty-state" id="emptyState">
-        <span class="empty-icon">â—Œ</span>
+        <span class="empty-icon">◌</span>
         <p>No entries yet.<br>Add your first deposit or withdrawal above.</p>
       </div>
+      <div class="empty-state" id="noMatchState">
+        <span class="empty-icon">◌</span>
+        <p>No entries match your filters.</p>
+      </div>
+    </section>
+
+    <!-- BACKUP -->
+    <section class="data-tools">
+      <div class="data-head">
+        <h2>Backup</h2>
+        <span class="data-sub">CSV export / import</span>
+      </div>
+      <div class="data-actions">
+        <button type="button" class="data-btn" id="exportBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+          Export CSV
+        </button>
+        <button type="button" class="data-btn" id="importBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21V9"/><path d="M7 14l5-5 5 5"/><path d="M5 3h14"/></svg>
+          Import CSV
+        </button>
+        <input type="file" id="importFile" accept=".csv,text/csv" hidden>
+      </div>
+      <p class="data-message" id="dataMessage" role="status"></p>
     </section>
 
     <footer class="footer-note">
